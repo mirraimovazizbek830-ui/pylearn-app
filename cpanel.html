@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TezHost cPanel</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Raleway',sans-serif;background:#1a1a2e;color:#e0e0e0;min-height:100vh}
+
+/* TOP HEADER */
+.top-header{
+  background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+  padding:0;
+  border-bottom:2px solid #d4a017;
+  position:sticky;top:0;z-index:100;
+}
+.top-header-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{
+  background:linear-gradient(135deg,#f5d97e,#d4a017);
+  color:#0a0800;font-weight:900;font-size:1.1rem;
+  padding:6px 14px;border-radius:6px;letter-spacing:.05em;
+}
+.brand-sub{font-size:.75rem;color:#9e8a5a;letter-spacing:.1em}
+
+.header-user{display:flex;align-items:center;gap:20px}
+.header-domain{
+  background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.3);
+  padding:5px 14px;border-radius:4px;
+  font-size:.78rem;color:#f5d97e;font-family:'JetBrains Mono',monospace;
+}
+.header-info{text-align:right}
+.header-name{font-size:.85rem;color:#f0e6c8;font-weight:600}
+.header-plan{font-size:.68rem;color:#d4a017}
+
+.top-nav{
+  background:rgba(0,0,0,.3);
+  display:flex;gap:0;border-top:1px solid rgba(212,160,23,.15);
+  overflow-x:auto;
+}
+.top-nav a{
+  padding:8px 18px;font-size:.78rem;color:#9e8a5a;
+  text-decoration:none;white-space:nowrap;
+  border-right:1px solid rgba(212,160,23,.1);
+  transition:all .2s;display:flex;align-items:center;gap:6px;
+}
+.top-nav a:hover{background:rgba(212,160,23,.1);color:#f5d97e}
+.top-nav a.active{background:rgba(212,160,23,.15);color:#f5d97e;border-bottom:2px solid #d4a017}
+
+/* SERVER INFO BAR */
+.server-bar{
+  background:#12101f;
+  border-bottom:1px solid #2a2a4a;
+  padding:8px 20px;
+  display:flex;gap:30px;align-items:center;flex-wrap:wrap;
+}
+.server-stat{display:flex;align-items:center;gap:8px;font-size:.72rem}
+.server-stat-label{color:#6e6e8a}
+.server-stat-val{color:#f0e6c8;font-family:'JetBrains Mono',monospace;font-weight:600}
+.online-dot{width:7px;height:7px;border-radius:50%;background:#3ecf74;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* USAGE BARS */
+.usage-bar{
+  background:#0d0c1a;border-bottom:1px solid #2a2a4a;
+  padding:10px 20px;display:flex;gap:24px;flex-wrap:wrap;
+}
+.usage-item{display:flex;align-items:center;gap:10px;flex:1;min-width:160px}
+.usage-label{font-size:.7rem;color:#6e6e8a;white-space:nowrap;width:70px}
+.usage-track{flex:1;height:8px;background:#1e1c35;border-radius:4px;overflow:hidden}
+.usage-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.fill-gold{background:linear-gradient(90deg,#a07810,#f5d97e)}
+.fill-blue{background:linear-gradient(90deg,#1a5276,#4fa8d5)}
+.fill-green{background:linear-gradient(90deg,#145a32,#3ecf74)}
+.fill-orange{background:linear-gradient(90deg,#784212,#f59e0b)}
+.usage-text{font-size:.68rem;color:#9e8a5a;white-space:nowrap;font-family:'JetBrains Mono',monospace}
+
+/* MAIN LAYOUT */
+.layout{display:flex;min-height:calc(100vh - 140px)}
+
+/* SIDEBAR */
+.sidebar{
+  width:200px;flex-shrink:0;
+  background:#12101f;
+  border-right:1px solid #2a2a4a;
+  padding:0;
+}
+.sidebar-section{border-bottom:1px solid #1e1c35}
+.sidebar-section-title{
+  padding:10px 14px;font-size:.65rem;color:#4a4a6a;
+  letter-spacing:.12em;text-transform:uppercase;
+  background:#0d0c1a;
+}
+.sidebar-link{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;color:#8a8aaa;font-size:.78rem;
+  text-decoration:none;cursor:pointer;
+  border-left:3px solid transparent;
+  transition:all .15s;
+}
+.sidebar-link:hover{background:rgba(212,160,23,.06);color:#f0e6c8;border-left-color:rgba(212,160,23,.4)}
+.sidebar-link.active{background:rgba(212,160,23,.1);color:#f5d97e;border-left-color:#d4a017}
+.sidebar-icon{font-size:.9rem;width:16px;text-align:center}
+
+/* CONTENT */
+.content{flex:1;padding:0;overflow-x:hidden}
+
+/* PAGE */
+.page{display:none;padding:20px}
+.page.active{display:block}
+
+/* PAGE TITLE */
+.page-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+  padding-bottom:12px;
+  border-bottom:1px solid #2a2a4a;
+}
+.page-header h1{
+  font-size:1.1rem;color:#f0e6c8;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+}
+.page-header p{font-size:.75rem;color:#6e6e8a;margin-top:3px}
+
+/* CPANEL ICONS GRID (main dashboard) */
+.cp-section{margin-bottom:28px}
+.cp-section-header{
+  background:linear-gradient(90deg,#1e1c35,#12101f);
+  border:1px solid #2a2a4a;
+  border-bottom:2px solid #d4a017;
+  padding:8px 16px;
+  display:flex;align-items:center;gap:8px;
+  border-radius:6px 6px 0 0;
+}
+.cp-section-header h2{font-size:.82rem;color:#f5d97e;font-weight:600;letter-spacing:.05em}
+.cp-section-body{
+  background:#12101f;
+  border:1px solid #2a2a4a;
+  border-top:none;
+  border-radius:0 0 6px 6px;
+  padding:16px;
+}
+.cp-icons{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+  gap:10px;
+}
+.cp-icon{
+  display:flex;flex-direction:column;align-items:center;
+  padding:12px 8px;border-radius:6px;
+  background:#1a1830;border:1px solid #2a2a4a;
+  cursor:pointer;text-decoration:none;
+  transition:all .15s;text-align:center;
+}
+.cp-icon:hover{
+  background:#221f3a;border-color:#d4a017;
+  transform:translateY(-1px);
+}
+.cp-icon img,.cp-icon .ico{
+  width:40px;height:40px;margin-bottom:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;border-radius:8px;
+}
+.cp-icon-name{font-size:.65rem;color:#9e9eba;line-height:1.3}
+.cp-icon:hover .cp-icon-name{color:#f5d97e}
+
+/* ICON COLORS */
+.ico-blue{background:linear-gradient(135deg,#1a3a5c,#2980b9)}
+.ico-green{background:linear-gradient(135deg,#0e3b2a,#27ae60)}
+.ico-gold{background:linear-gradient(135deg,#3d2b00,#d4a017)}
+.ico-purple{background:linear-gradient(135deg,#2d1b69,#8e44ad)}
+.ico-red{background:linear-gradient(135deg,#4a1010,#c0392b)}
+.ico-teal{background:linear-gradient(135deg,#0a3030,#16a085)}
+.ico-orange{background:linear-gradient(135deg,#3d1f00,#e67e22)}
+.ico-gray{background:linear-gradient(135deg,#1a1a2e,#4a4a6a)}
+
+/* STATS CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{
+  background:#12101f;border:1px solid #2a2a4a;
+  border-radius:8px;padding:14px 16px;
+  border-left:3px solid #d4a017;
+}
+.stat-card-label{font-size:.68rem;color:#6e6e8a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.stat-card-val{font-size:1.4rem;font-weight:700;color:#f0e6c8;font-family:'JetBrains Mono',monospace}
+.stat-card-sub{font-size:.68rem;color:#9e8a5a;margin-top:3px}
+
+/* TABLE */
+.cp-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.cp-table th{
+  background:#0d0c1a;color:#6e6e8a;font-weight:600;
+  padding:8px 12px;text-align:left;
+  border-bottom:1px solid #2a2a4a;letter-spacing:.06em;
+  font-size:.68rem;text-transform:uppercase;
+}
+.cp-table td{padding:9px 12px;border-bottom:1px solid #1e1c35;color:#b0b0cc}
+.cp-table tr:hover td{background:rgba(212,160,23,.03)}
+.cp-table tr:last-child td{border-bottom:none}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:700}
+.badge-green{background:rgba(62,207,116,.12);color:#3ecf74;border:1px solid rgba(62,207,116,.25)}
+.badge-gold{background:rgba(212,160,23,.12);color:#d4a017;border:1px solid rgba(212,160,23,.25)}
+.badge-red{background:rgba(192,57,43,.12);color:#e74c3c;border:1px solid rgba(192,57,43,.25)}
+.badge-blue{background:rgba(79,168,213,.12);color:#4fa8d5;border:1px solid rgba(79,168,213,.25)}
+
+/* FORM */
+.cp-form{display:grid;gap:14px}
+.cp-form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:.72rem;color:#8a8aaa;letter-spacing:.05em}
+.form-input{
+  background:#0d0c1a;border:1px solid #2a2a4a;
+  color:#f0e6c8;padding:8px 12px;border-radius:5px;
+  font-size:.8rem;font-family:'Raleway',sans-serif;
+  outline:none;transition:border-color .2s;
+}
+.form-input:focus{border-color:#d4a017}
+.form-select{
+  background:#0d0c1a;border:1px solid #2a2a4a;
+  color:#f0e6c8;padding:8px 12px;border-radius:5px;
+  font-size:.8rem;outline:none;
+}
+.btn{
+  padding:8px 20px;border-radius:5px;font-size:.78rem;
+  font-family:'Raleway',sans-serif;font-weight:700;
+  cursor:pointer;border:none;transition:all .2s;
+  letter-spacing:.04em;
+}
+.btn-gold{background:linear-gradient(135deg,#f5d97e,#d4a017);color:#0a0800}
+.btn-gold:hover{filter:brightness(1.1)}
+.btn-outline{background:transparent;border:1px solid #2a2a4a;color:#8a8aaa}
+.btn-outline:hover{border-color:#d4a017;color:#f5d97e}
+.btn-red{background:rgba(192,57,43,.2);border:1px solid rgba(192,57,43,.4);color:#e74c3c}
+.btn-red:hover{background:rgba(192,57,43,.3)}
+
+/* FILE MANAGER */
+.file-toolbar{
+  display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;
+}
+.file-path{
+  flex:1;background:#0d0c1a;border:1px solid #2a2a4a;
+  padding:6px 12px;border-radius:4px;
+  font-family:'JetBrains Mono',monospace;font-size:.75rem;color:#f5d97e;
+  min-width:200px;
+}
+.file-item{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 12px;border-bottom:1px solid #1a1830;
+  cursor:pointer;transition:background .15s;
+}
+.file-item:hover{background:rgba(212,160,23,.04)}
+.file-item.selected{background:rgba(212,160,23,.08)}
+.file-icon{font-size:1rem;width:20px;text-align:center}
+.file-name{flex:1;font-size:.78rem;color:#c0c0d8;font-family:'JetBrains Mono',monospace}
+.file-size{font-size:.68rem;color:#6e6e8a;width:70px;text-align:right}
+.file-date{font-size:.68rem;color:#6e6e8a;width:120px;text-align:right}
+.file-perm{font-size:.65rem;color:#4a4a6a;width:70px;text-align:right;font-family:'JetBrains Mono',monospace}
+
+/* NOTIFICATION */
+.notif{
+  background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.2);
+  border-left:3px solid #d4a017;
+  border-radius:5px;padding:10px 14px;
+  font-size:.78rem;color:#c4b07a;margin-bottom:16px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+
+/* TERMINAL */
+.terminal{
+  background:#060608;border:1px solid #2a2a4a;
+  border-radius:6px;padding:14px;
+  font-family:'JetBrains Mono',monospace;font-size:.75rem;
+  color:#3ecf74;line-height:1.7;height:180px;overflow-y:auto;
+}
+.term-prompt{color:#d4a017}
+.term-cmd{color:#f0e6c8}
+
+/* MOBILE */
+@media(max-width:768px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;border-right:none;border-bottom:1px solid #2a2a4a;display:none}
+  .sidebar.mob-open{display:block}
+  .cp-form-row{grid-template-columns:1fr}
+  .file-date,.file-perm{display:none}
+  .server-bar{gap:14px}
+  .usage-bar{gap:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP HEADER -->
+<div class="top-header">
+  <div class="top-header-inner">
+    <div class="brand">
+      <div class="brand-logo">TezHost</div>
+      <div>
+        <div style="font-size:.85rem;color:#f0e6c8;font-weight:600">cPanel</div>
+        <div class="brand-sub">HOSTING BOSHQARUV PANELI</div>
+      </div>
+    </div>
+    <div class="header-user">
+      <div class="header-domain">example.uz</div>
+      <div class="header-info">
+        <div class="header-name">Azizbek Miraimov</div>
+        <div class="header-plan">Ultra 35 · Faol</div>
+      </div>
+    </div>
+  </div>
+  <div class="top-nav">
+    <a href="#" class="active" onclick="showPage('dashboard',this)">🏠 Bosh sahifa</a>
+    <a href="#" onclick="showPage('files',this)">📁 Fayllar</a>
+    <a href="#" onclick="showPage('domains',this)">🌐 Domenlar</a>
+    <a href="#" onclick="showPage('email',this)">📧 Email</a>
+    <a href="#" onclick="showPage('database',this)">🗄️ Bazalar</a>
+    <a href="#" onclick="showPage('ssl',this)">🔒 SSL</a>
+    <a href="#" onclick="showPage('backup',this)">💾 Backup</a>
+    <a href="#" onclick="showPage('ftp',this)">📡 FTP</a>
+    <a href="#" onclick="showPage('cron',this)">⏱️ Cron</a>
+    <a href="#" onclick="showPage('logs',this)">📊 Loglar</a>
+    <a href="index.html" style="margin-left:auto;color:#e74c3c">🚪 Chiqish</a>
+  </div>
+</div>
+
+<!-- SERVER INFO BAR -->
+<div class="server-bar">
+  <div class="server-stat"><div class="online-dot"></div><span class="server-stat-label">Holat:</span><span class="server-stat-val" style="color:#3ecf74">ONLINE</span></div>
+  <div class="server-stat"><span class="server-stat-label">Server:</span><span class="server-stat-val">srv01.tezhost.uz</span></div>
+  <div class="server-stat"><span class="server-stat-label">IP:</span><span class="server-stat-val">185.22.64.101</span></div>
+  <div class="server-stat"><span class="server-stat-label">PHP:</span><span class="server-stat-val">8.2</span></div>
+  <div class="server-stat"><span class="server-stat-label">MySQL:</span><span class="server-stat-val">8.0</span></div>
+  <div class="server-stat"><span class="server-stat-label">cPanel:</span><span class="server-stat-val">v11.0</span></div>
+  <div class="server-stat" style="margin-left:auto"><span class="server-stat-label">Tarif tugash:</span><span class="server-stat-val" style="color:#f59e0b">47 kun qoldi</span></div>
+</div>
+
+<!-- USAGE BARS -->
+<div class="usage-bar">
+  <div class="usage-item">
+    <span class="usage-label">Disk</span>
+    <div class="usage-track"><div class="usage-fill fill-gold" style="width:35%"></div></div>
+    <span class="usage-text">12.4 / 35 GB</span>
+  </div>
+  <div class="usage-item">
+    <span class="usage-label">Bandwidth</span>
+    <div class="usage-track"><div class="usage-fill fill-blue" style="width:21%"></div></div>
+    <span class="usage-text">2.1 / 10 GB</span>
+  </div>
+  <div class="usage-item">
+    <span class="usage-label">Inodes</span>
+    <div class="usage-track"><div class="usage-fill fill-green" style="width:18%"></div></div>
+    <span class="usage-text">18K / 100K</span>
+  </div>
+  <div class="usage-item">
+    <span class="usage-label">Email</span>
+    <div class="usage-track"><div class="usage-fill fill-orange" style="width:80%"></div></div>
+    <span class="usage-text">4 / 5</span>
+  </div>
+  <div class="usage-item">
+    <span class="usage-label">MySQL</span>
+    <div class="usage-track"><div class="usage-fill fill-blue" style="width:60%"></div></div>
+    <span class="usage-text">3 / 5</span>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Fayllar</div>
+      <a class="sidebar-link" href="#" onclick="showPage('files',null)"><span class="sidebar-icon">📁</span>Fayl menejer</a>
+      <a class="sidebar-link" href="#" onclick="showPage('ftp',null)"><span class="sidebar-icon">📡</span>FTP akkauntlar</a>
+      <a class="sidebar-link" href="#" onclick="showPage('backup',null)"><span class="sidebar-icon">💾</span>Backup</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Web</div>
+      <a class="sidebar-link" href="#" onclick="showPage('domains',null)"><span class="sidebar-icon">🌐</span>Domenlar</a>
+      <a class="sidebar-link" href="#" onclick="showPage('subdomains',null)"><span class="sidebar-icon">🔗</span>Subdomenlar</a>
+      <a class="sidebar-link" href="#" onclick="showPage('redirect',null)"><span class="sidebar-icon">↪️</span>Redirectlar</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Email</div>
+      <a class="sidebar-link" href="#" onclick="showPage('email',null)"><span class="sidebar-icon">📧</span>Email akkauntlar</a>
+      <a class="sidebar-link" href="#" onclick="showPage('webmail',null)"><span class="sidebar-icon">📬</span>Webmail</a>
+      <a class="sidebar-link" href="#" onclick="showPage('spam',null)"><span class="sidebar-icon">🚫</span>Spam filtri</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Baza</div>
+      <a class="sidebar-link" href="#" onclick="showPage('database',null)"><span class="sidebar-icon">🗄️</span>MySQL bazalar</a>
+      <a class="sidebar-link" href="#" onclick="showPage('phpmyadmin',null)"><span class="sidebar-icon">🔧</span>phpMyAdmin</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Xavfsizlik</div>
+      <a class="sidebar-link" href="#" onclick="showPage('ssl',null)"><span class="sidebar-icon">🔒</span>SSL/TLS</a>
+      <a class="sidebar-link" href="#" onclick="showPage('firewall',null)"><span class="sidebar-icon">🛡️</span>IP Bloker</a>
+      <a class="sidebar-link" href="#" onclick="showPage('hotlink',null)"><span class="sidebar-icon">🔗</span>Hotlink himoya</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Ilova</div>
+      <a class="sidebar-link" href="#" onclick="showPage('softaculous',null)"><span class="sidebar-icon">📦</span>Softaculous</a>
+      <a class="sidebar-link" href="#" onclick="showPage('cron',null)"><span class="sidebar-icon">⏱️</span>Cron Jobs</a>
+      <a class="sidebar-link" href="#" onclick="showPage('php',null)"><span class="sidebar-icon">⚙️</span>PHP versiya</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Hisobot</div>
+      <a class="sidebar-link" href="#" onclick="showPage('logs',null)"><span class="sidebar-icon">📊</span>Kirish loglari</a>
+      <a class="sidebar-link" href="#" onclick="showPage('errors',null)"><span class="sidebar-icon">⚠️</span>Xato loglari</a>
+      <a class="sidebar-link" href="#" onclick="showPage('bandwidth',null)"><span class="sidebar-icon">📈</span>Bandwidth</a>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="page active" id="page-dashboard">
+      <div style="padding:20px">
+
+        <div class="notif">
+          ⚠️ <div>SSL sertifikatingiz <strong>45 kun</strong> dan so'ng tugaydi. <a href="#" onclick="showPage('ssl',null)" style="color:#d4a017">SSL bo'limiga o'ting →</a></div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-card-label">💾 Disk</div><div class="stat-card-val">12.4 GB</div><div class="stat-card-sub">35 GB dan 35% ishlatilgan</div></div>
+          <div class="stat-card" style="border-left-color:#4fa8d5"><div class="stat-card-label">📶 Bandwidth</div><div class="stat-card-val">2.1 GB</div><div class="stat-card-sub">Bu oy sarflangan</div></div>
+          <div class="stat-card" style="border-left-color:#3ecf74"><div class="stat-card-label">🌐 Domenlar</div><div class="stat-card-val">3</div><div class="stat-card-sub">2 ta faol, 1 ta subdomen</div></div>
+          <div class="stat-card" style="border-left-color:#f59e0b"><div class="stat-card-label">📧 Email</div><div class="stat-card-val">4 / 5</div><div class="stat-card-sub">1 ta bo'sh qolgan</div></div>
+        </div>
+
+        <!-- FAYLLAR -->
+        <div class="cp-section">
+          <div class="cp-section-header"><h2>📁 Fayllar</h2></div>
+          <div class="cp-section-body">
+            <div class="cp-icons">
+              <a class="cp-icon" href="#" onclick="showPage('files',null)"><div class="ico ico-blue">📁</div><div class="cp-icon-name">Fayl menejer</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('ftp',null)"><div class="ico ico-teal">📡</div><div class="cp-icon-name">FTP akkauntlar</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('backup',null)"><div class="ico ico-gold">💾</div><div class="cp-icon-name">Backup</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-purple">🖼️</div><div class="cp-icon-name">Disk kvota</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-gray">📦</div><div class="cp-icon-name">Arxivlar</div></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEB -->
+        <div class="cp-section">
+          <div class="cp-section-header"><h2>🌐 Domenlar</h2></div>
+          <div class="cp-section-body">
+            <div class="cp-icons">
+              <a class="cp-icon" href="#" onclick="showPage('domains',null)"><div class="ico ico-blue">🌐</div><div class="cp-icon-name">Domenlar</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('subdomains',null)"><div class="ico ico-green">🔗</div><div class="cp-icon-name">Subdomenlar</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('redirect',null)"><div class="ico ico-orange">↪️</div><div class="cp-icon-name">Redirectlar</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-purple">📌</div><div class="cp-icon-name">DNS Zone</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-teal">🔌</div><div class="cp-icon-name">Addon domenlar</div></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMAIL -->
+        <div class="cp-section">
+          <div class="cp-section-header"><h2>📧 Email</h2></div>
+          <div class="cp-section-body">
+            <div class="cp-icons">
+              <a class="cp-icon" href="#" onclick="showPage('email',null)"><div class="ico ico-blue">📧</div><div class="cp-icon-name">Email akkauntlar</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('webmail',null)"><div class="ico ico-green">📬</div><div class="cp-icon-name">Webmail</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-purple">📨</div><div class="cp-icon-name">Forwarder</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('spam',null)"><div class="ico ico-red">🚫</div><div class="cp-icon-name">Spam filtri</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-orange">📮</div><div class="cp-icon-name">Autoresponder</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-teal">📋</div><div class="cp-icon-name">Email log</div></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- DATABASE -->
+        <div class="cp-section">
+          <div class="cp-section-header"><h2>🗄️ Ma'lumotlar bazasi</h2></div>
+          <div class="cp-section-body">
+            <div class="cp-icons">
+              <a class="cp-icon" href="#" onclick="showPage('database',null)"><div class="ico ico-blue">🗄️</div><div class="cp-icon-name">MySQL bazalar</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('phpmyadmin',null)"><div class="ico ico-orange">🔧</div><div class="cp-icon-name">phpMyAdmin</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-purple">👤</div><div class="cp-icon-name">MySQL foydalanuvchi</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-green">🔄</div><div class="cp-icon-name">DB import</div></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECURITY -->
+        <div class="cp-section">
+          <div class="cp-section-header"><h2>🔒 Xavfsizlik</h2></div>
+          <div class="cp-section-body">
+            <div class="cp-icons">
+              <a class="cp-icon" href="#" onclick="showPage('ssl',null)"><div class="ico ico-green">🔒</div><div class="cp-icon-name">SSL/TLS</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('firewall',null)"><div class="ico ico-red">🛡️</div><div class="cp-icon-name">IP Bloker</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-orange">🔑</div><div class="cp-icon-name">Parol himoya</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('hotlink',null)"><div class="ico ico-purple">🔗</div><div class="cp-icon-name">Hotlink himoya</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-teal">📜</div><div class="cp-icon-name">SSL logi</div></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOFTWARE -->
+        <div class="cp-section">
+          <div class="cp-section-header"><h2>📦 Dasturlar</h2></div>
+          <div class="cp-section-body">
+            <div class="cp-icons">
+              <a class="cp-icon" href="#" onclick="showPage('softaculous',null)"><div class="ico ico-blue">📦</div><div class="cp-icon-name">Softaculous</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('php',null)"><div class="ico ico-purple">⚙️</div><div class="cp-icon-name">PHP versiya</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('cron',null)"><div class="ico ico-gold">⏱️</div><div class="cp-icon-name">Cron Jobs</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-green">🐍</div><div class="cp-icon-name">Python</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-orange">💎</div><div class="cp-icon-name">Ruby</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-teal">🔩</div><div class="cp-icon-name">Node.js</div></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="cp-section">
+          <div class="cp-section-header"><h2>📊 Hisobotlar</h2></div>
+          <div class="cp-section-body">
+            <div class="cp-icons">
+              <a class="cp-icon" href="#" onclick="showPage('logs',null)"><div class="ico ico-blue">📊</div><div class="cp-icon-name">Kirish loglari</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('errors',null)"><div class="ico ico-red">⚠️</div><div class="cp-icon-name">Xato loglari</div></a>
+              <a class="cp-icon" href="#" onclick="showPage('bandwidth',null)"><div class="ico ico-green">📈</div><div class="cp-icon-name">Bandwidth</div></a>
+              <a class="cp-icon" href="#"><div class="ico ico-gold">📉</div><div class="cp-icon-name">Resurs monitor</div></a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ FAYL MENEJER ══ -->
+    <div class="page" id="page-files">
+      <div class="page-header"><div><h1>📁 Fayl menejer</h1><p>Serverda fayllarni boshqaring</p></div></div>
+      <div class="file-toolbar">
+        <button class="btn btn-gold">📁 Yangi papka</button>
+        <button class="btn btn-outline">📄 Yangi fayl</button>
+        <button class="btn btn-outline">⬆️ Yuklash</button>
+        <button class="btn btn-outline">📦 Arxivlash</button>
+        <button class="btn btn-red">🗑️ O'chirish</button>
+        <input class="file-path" value="/home/example/public_html" readonly/>
+      </div>
+      <div style="background:#12101f;border:1px solid #2a2a4a;border-radius:6px;overflow:hidden">
+        <div style="display:flex;background:#0d0c1a;padding:7px 12px;border-bottom:1px solid #1e1c35;font-size:.65rem;color:#6e6e8a;letter-spacing:.08em;text-transform:uppercase">
+          <span style="width:20px"></span>
+          <span style="flex:1;margin-left:10px">Nomi</span>
+          <span style="width:70px;text-align:right">Hajm</span>
+          <span style="width:120px;text-align:right">Sana</span>
+          <span style="width:70px;text-align:right">Ruxsat</span>
+        </div>
+        <div class="file-item"><span class="file-icon">📁</span><span class="file-name">wp-content</span><span class="file-size">—</span><span class="file-date">2026-05-10</span><span class="file-perm">755</span></div>
+        <div class="file-item"><span class="file-icon">📁</span><span class="file-name">wp-includes</span><span class="file-size">—</span><span class="file-date">2026-05-10</span><span class="file-perm">755</span></div>
+        <div class="file-item"><span class="file-icon">📁</span><span class="file-name">wp-admin</span><span class="file-size">—</span><span class="file-date">2026-05-10</span><span class="file-perm">755</span></div>
+        <div class="file-item"><span class="file-icon">📄</span><span class="file-name">index.php</span><span class="file-size">418 B</span><span class="file-date">2026-05-01</span><span class="file-perm">644</span></div>
+        <div class="file-item"><span class="file-icon">📄</span><span class="file-name">wp-config.php</span><span class="file-size">3.2 KB</span><span class="file-date">2026-04-15</span><span class="file-perm">644</span></div>
+        <div class="file-item"><span class="file-icon">📄</span><span class="file-name">.htaccess</span><span class="file-size">401 B</span><span class="file-date">2026-04-15</span><span class="file-perm">644</span></div>
+        <div class="file-item"><span class="file-icon">🖼️</span><span class="file-name">logo.png</span><span class="file-size">24 KB</span><span class="file-date">2026-03-20</span><span class="file-perm">644</span></div>
+        <div class="file-item"><span class="file-icon">📄</span><span class="file-name">robots.txt</span><span class="file-size">67 B</span><span class="file-date">2026-03-01</span><span class="file-perm">644</span></div>
+      </div>
+    </div>
+
+    <!-- ══ DOMENLAR ══ -->
+    <div class="page" id="page-domains">
+      <div class="page-header"><div><h1>🌐 Domenlar</h1><p>Domenlar va subdomenlarni boshqaring</p></div><button class="btn btn-gold" onclick="document.getElementById('addDomainForm').style.display='block'">+ Domen qo'shish</button></div>
+      <div id="addDomainForm" style="display:none;background:#12101f;border:1px solid #2a2a4a;border-radius:8px;padding:18px;margin-bottom:16px">
+        <div style="font-size:.8rem;color:#f5d97e;margin-bottom:12px;font-weight:600">Yangi domen qo'shish</div>
+        <div class="cp-form">
+          <div class="cp-form-row">
+            <div class="form-group"><label class="form-label">Domen nomi</label><input class="form-input" placeholder="example.uz"/></div>
+            <div class="form-group"><label class="form-label">Tur</label><select class="form-select"><option>Asosiy domen</option><option>Addon domen</option><option>Subdomen</option></select></div>
+          </div>
+          <div style="display:flex;gap:8px"><button class="btn btn-gold">Qo'shish</button><button class="btn btn-outline" onclick="document.getElementById('addDomainForm').style.display='none'">Bekor</button></div>
+        </div>
+      </div>
+      <table class="cp-table">
+        <thead><tr><th>Domen</th><th>Tur</th><th>Hujjat yo'li</th><th>SSL</th><th>Holat</th><th>Amal</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:'JetBrains Mono',monospace">example.uz</td><td>Asosiy</td><td>/public_html</td><td><span class="badge badge-green">✓ Faol</span></td><td><span class="badge badge-green">Faol</span></td><td><button class="btn btn-outline" style="padding:3px 10px;font-size:.68rem">DNS</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">shop.example.uz</td><td>Subdomen</td><td>/public_html/shop</td><td><span class="badge badge-green">✓ Faol</span></td><td><span class="badge badge-green">Faol</span></td><td><button class="btn btn-outline" style="padding:3px 10px;font-size:.68rem">DNS</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">blog.example.uz</td><td>Subdomen</td><td>/public_html/blog</td><td><span class="badge badge-gold">⏳ Kutilmoqda</span></td><td><span class="badge badge-gold">Kutilmoqda</span></td><td><button class="btn btn-outline" style="padding:3px 10px;font-size:.68rem">DNS</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ EMAIL ══ -->
+    <div class="page" id="page-email">
+      <div class="page-header"><div><h1>📧 Email akkauntlar</h1><p>Email manzillarni boshqaring</p></div><button class="btn btn-gold">+ Yangi email</button></div>
+      <div style="background:#12101f;border:1px solid #2a2a4a;border-radius:8px;padding:18px;margin-bottom:16px">
+        <div style="font-size:.8rem;color:#f5d97e;margin-bottom:12px;font-weight:600">Yangi email yaratish</div>
+        <div class="cp-form">
+          <div class="cp-form-row">
+            <div class="form-group"><label class="form-label">Email nomi</label><input class="form-input" placeholder="info"/></div>
+            <div class="form-group"><label class="form-label">Domen</label><select class="form-select"><option>@example.uz</option></select></div>
+          </div>
+          <div class="cp-form-row">
+            <div class="form-group"><label class="form-label">Parol</label><input class="form-input" type="password" placeholder="Kuchli parol"/></div>
+            <div class="form-group"><label class="form-label">Kvota (MB)</label><input class="form-input" placeholder="500"/></div>
+          </div>
+          <button class="btn btn-gold">Yaratish</button>
+        </div>
+      </div>
+      <table class="cp-table">
+        <thead><tr><th>Email</th><th>Kvota</th><th>Ishlatilgan</th><th>Holat</th><th>Amal</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:'JetBrains Mono',monospace">admin@example.uz</td><td>1 GB</td><td>124 MB</td><td><span class="badge badge-green">Faol</span></td><td style="display:flex;gap:6px;padding:9px 12px"><button class="btn btn-outline" style="padding:3px 8px;font-size:.65rem">Parol</button><button class="btn btn-red" style="padding:3px 8px;font-size:.65rem">O'chir</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">info@example.uz</td><td>500 MB</td><td>48 MB</td><td><span class="badge badge-green">Faol</span></td><td style="display:flex;gap:6px;padding:9px 12px"><button class="btn btn-outline" style="padding:3px 8px;font-size:.65rem">Parol</button><button class="btn btn-red" style="padding:3px 8px;font-size:.65rem">O'chir</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">support@example.uz</td><td>500 MB</td><td>87 MB</td><td><span class="badge badge-green">Faol</span></td><td style="display:flex;gap:6px;padding:9px 12px"><button class="btn btn-outline" style="padding:3px 8px;font-size:.65rem">Parol</button><button class="btn btn-red" style="padding:3px 8px;font-size:.65rem">O'chir</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ DATABASE ══ -->
+    <div class="page" id="page-database">
+      <div class="page-header"><div><h1>🗄️ MySQL bazalar</h1><p>Ma'lumotlar bazalarini boshqaring</p></div><button class="btn btn-gold">+ Yangi baza</button></div>
+      <div style="background:#12101f;border:1px solid #2a2a4a;border-radius:8px;padding:18px;margin-bottom:16px">
+        <div class="cp-form">
+          <div class="cp-form-row">
+            <div class="form-group"><label class="form-label">Baza nomi</label><div style="display:flex;gap:6px;align-items:center"><span style="font-size:.75rem;color:#6e6e8a">example_</span><input class="form-input" placeholder="mydb" style="flex:1"/></div></div>
+            <div class="form-group"><label class="form-label">Foydalanuvchi</label><input class="form-input" placeholder="dbuser"/></div>
+          </div>
+          <div class="cp-form-row">
+            <div class="form-group"><label class="form-label">Parol</label><input class="form-input" type="password"/></div>
+            <div style="display:flex;align-items:flex-end"><button class="btn btn-gold">Yaratish</button></div>
+          </div>
+        </div>
+      </div>
+      <table class="cp-table">
+        <thead><tr><th>Baza nomi</th><th>Hajm</th><th>Jadvallar</th><th>Foydalanuvchi</th><th>Amal</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:'JetBrains Mono',monospace">example_wp</td><td>42 MB</td><td>23</td><td>example_wpuser</td><td><button class="btn btn-outline" style="padding:3px 10px;font-size:.68rem">phpMyAdmin</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">example_shop</td><td>18 MB</td><td>15</td><td>example_shopuser</td><td><button class="btn btn-outline" style="padding:3px 10px;font-size:.68rem">phpMyAdmin</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">example_crm</td><td>7 MB</td><td>8</td><td>example_crmuser</td><td><button class="btn btn-outline" style="padding:3px 10px;font-size:.68rem">phpMyAdmin</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ SSL ══ -->
+    <div class="page" id="page-ssl">
+      <div class="page-header"><div><h1>🔒 SSL/TLS sertifikatlar</h1><p>Domenlaringizni SSL bilan himoyalang</p></div></div>
+      <div class="notif">🔒 Let's Encrypt orqali bepul SSL sertifikat o'rnatiladi. Domen DNS to'g'ri sozlangan bo'lishi kerak.</div>
+      <table class="cp-table" style="margin-bottom:16px">
+        <thead><tr><th>Domen</th><th>Tur</th><th>Tugash sanasi</th><th>Holat</th><th>Amal</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:'JetBrains Mono',monospace">example.uz</td><td>Let's Encrypt</td><td>2026-07-01</td><td><span class="badge badge-green">✓ Faol</span></td><td><button class="btn btn-outline" style="padding:3px 10px;font-size:.68rem">Yangilash</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">shop.example.uz</td><td>Let's Encrypt</td><td>2026-07-01</td><td><span class="badge badge-green">✓ Faol</span></td><td><button class="btn btn-outline" style="padding:3px 10px;font-size:.68rem">Yangilash</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">blog.example.uz</td><td>—</td><td>—</td><td><span class="badge badge-red">✗ Yo'q</span></td><td><button class="btn btn-gold" style="padding:3px 10px;font-size:.68rem">O'rnatish</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ BACKUP ══ -->
+    <div class="page" id="page-backup">
+      <div class="page-header"><div><h1>💾 Backup</h1><p>Ma'lumotlaringizni zaxiralang</p></div><button class="btn btn-gold">⬇️ To'liq backup olish</button></div>
+      <div class="stats-row" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-card-label">So'nggi backup</div><div class="stat-card-val" style="font-size:1rem">2026-05-15</div><div class="stat-card-sub">2.4 GB · Muvaffaqiyatli</div></div>
+        <div class="stat-card" style="border-left-color:#3ecf74"><div class="stat-card-label">Avtomatik backup</div><div class="stat-card-val" style="font-size:1rem">Kunlik</div><div class="stat-card-sub">Har kecha 02:00 da</div></div>
+        <div class="stat-card" style="border-left-color:#4fa8d5"><div class="stat-card-label">Saqlash joyi</div><div class="stat-card-val" style="font-size:1rem">7.2 GB</div><div class="stat-card-sub">5 ta backup saqlangan</div></div>
+      </div>
+      <table class="cp-table">
+        <thead><tr><th>Sana</th><th>Tur</th><th>Hajm</th><th>Holat</th><th>Amal</th></tr></thead>
+        <tbody>
+          <tr><td>2026-05-15 02:00</td><td>To'liq</td><td>2.4 GB</td><td><span class="badge badge-green">OK</span></td><td style="display:flex;gap:6px;padding:9px 12px"><button class="btn btn-outline" style="padding:3px 8px;font-size:.65rem">⬇️ Yuklab olish</button><button class="btn btn-gold" style="padding:3px 8px;font-size:.65rem">↩️ Tiklash</button></td></tr>
+          <tr><td>2026-05-14 02:00</td><td>To'liq</td><td>2.3 GB</td><td><span class="badge badge-green">OK</span></td><td style="display:flex;gap:6px;padding:9px 12px"><button class="btn btn-outline" style="padding:3px 8px;font-size:.65rem">⬇️ Yuklab olish</button><button class="btn btn-gold" style="padding:3px 8px;font-size:.65rem">↩️ Tiklash</button></td></tr>
+          <tr><td>2026-05-13 02:00</td><td>To'liq</td><td>2.3 GB</td><td><span class="badge badge-green">OK</span></td><td style="display:flex;gap:6px;padding:9px 12px"><button class="btn btn-outline" style="padding:3px 8px;font-size:.65rem">⬇️ Yuklab olish</button><button class="btn btn-gold" style="padding:3px 8px;font-size:.65rem">↩️ Tiklash</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ FTP ══ -->
+    <div class="page" id="page-ftp">
+      <div class="page-header"><div><h1>📡 FTP akkauntlar</h1><p>FTP orqali fayllarga uling</p></div><button class="btn btn-gold">+ Yangi FTP</button></div>
+      <div class="notif">📡 FTP server: <strong style="font-family:'JetBrains Mono',monospace">ftp.example.uz</strong> · Port: <strong>21</strong> (yoki SFTP: 22)</div>
+      <table class="cp-table">
+        <thead><tr><th>Foydalanuvchi</th><th>Yo'l</th><th>Kvota</th><th>Amal</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:'JetBrains Mono',monospace">example</td><td>/home/example</td><td>Cheksiz</td><td><button class="btn btn-outline" style="padding:3px 10px;font-size:.68rem">Parol</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">dev_user</td><td>/public_html/dev</td><td>1 GB</td><td style="display:flex;gap:6px;padding:9px 12px"><button class="btn btn-outline" style="padding:3px 8px;font-size:.65rem">Parol</button><button class="btn btn-red" style="padding:3px 8px;font-size:.65rem">O'chir</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ CRON ══ -->
+    <div class="page" id="page-cron">
+      <div class="page-header"><div><h1>⏱️ Cron Jobs</h1><p>Avtomatik vazifalarni rejalashtiring</p></div><button class="btn btn-gold">+ Yangi Cron</button></div>
+      <div style="background:#12101f;border:1px solid #2a2a4a;border-radius:8px;padding:18px;margin-bottom:16px">
+        <div class="cp-form">
+          <div class="cp-form-row">
+            <div class="form-group"><label class="form-label">Daqiqa</label><input class="form-input" value="0"/></div>
+            <div class="form-group"><label class="form-label">Soat</label><input class="form-input" value="*"/></div>
+            <div class="form-group"><label class="form-label">Kun</label><input class="form-input" value="*"/></div>
+            <div class="form-group"><label class="form-label">Oy</label><input class="form-input" value="*"/></div>
+            <div class="form-group"><label class="form-label">Hafta kuni</label><input class="form-input" value="*"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Buyruq</label><input class="form-input" placeholder="/usr/bin/php /home/example/public_html/cron.php"/></div>
+          <button class="btn btn-gold">Saqlash</button>
+        </div>
+      </div>
+      <table class="cp-table">
+        <thead><tr><th>Jadval</th><th>Buyruq</th><th>Amal</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:'JetBrains Mono',monospace">0 * * * *</td><td style="font-family:'JetBrains Mono',monospace;font-size:.72rem">/usr/bin/php /home/example/public_html/cron.php</td><td><button class="btn btn-red" style="padding:3px 10px;font-size:.68rem">O'chir</button></td></tr>
+          <tr><td style="font-family:'JetBrains Mono',monospace">0 2 * * *</td><td style="font-family:'JetBrains Mono',monospace;font-size:.72rem">/usr/bin/php /home/example/public_html/backup.php</td><td><button class="btn btn-red" style="padding:3px 10px;font-size:.68rem">O'chir</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ LOGS ══ -->
+    <div class="page" id="page-logs">
+      <div class="page-header"><div><h1>📊 Server loglari</h1><p>Kirish va xato loglarini kuzating</p></div></div>
+      <div class="terminal">
+        <div><span class="term-prompt">185.22.64.101 </span>- - [15/May/2026:13:45:22 +0500] <span class="term-cmd">"GET / HTTP/1.1"</span> 200 4523</div>
+        <div><span class="term-prompt">91.108.4.0 </span>- - [15/May/2026:13:44:18 +0500] <span class="term-cmd">"GET /wp-admin/ HTTP/1.1"</span> 301 0</div>
+        <div><span class="term-prompt">172.16.0.1 </span>- - [15/May/2026:13:43:55 +0500] <span class="term-cmd">"POST /wp-login.php HTTP/1.1"</span> 200 1234</div>
+        <div><span class="term-prompt">10.0.0.1 </span>- - [15/May/2026:13:42:01 +0500] <span class="term-cmd">"GET /shop/ HTTP/1.1"</span> 200 8901</div>
+        <div><span class="term-prompt">185.22.64.101 </span>- - [15/May/2026:13:41:30 +0500] <span class="term-cmd">"GET /blog/ HTTP/1.1"</span> 200 3210</div>
+        <div><span class="term-prompt">91.108.4.0 </span>- - [15/May/2026:13:40:00 +0500] <span class="term-cmd">"GET /robots.txt HTTP/1.1"</span> 200 67</div>
+        <div style="color:#e74c3c"><span class="term-prompt">45.33.32.156 </span>- - [15/May/2026:13:39:10 +0500] <span class="term-cmd">"GET /wp-login.php HTTP/1.1"</span> 403 0 ⚠️ BLOKLANDI</div>
+        <div><span class="term-prompt">185.22.64.101 </span>- - [15/May/2026:13:38:45 +0500] <span class="term-cmd">"GET /sitemap.xml HTTP/1.1"</span> 200 1024</div>
+      </div>
+    </div>
+
+    <!-- ══ SOFTACULOUS ══ -->
+    <div class="page" id="page-softaculous">
+      <div class="page-header"><div><h1>📦 Softaculous — Ilovalar</h1><p>Bir bosishda ilovalar o'rnatish</p></div></div>
+      <div class="cp-section">
+        <div class="cp-section-header"><h2>🌟 Mashhur ilovalar</h2></div>
+        <div class="cp-section-body">
+          <div class="cp-icons">
+            <div class="cp-icon"><div class="ico ico-blue">📝</div><div class="cp-icon-name">WordPress</div></div>
+            <div class="cp-icon"><div class="ico ico-orange">🛒</div><div class="cp-icon-name">WooCommerce</div></div>
+            <div class="cp-icon"><div class="ico ico-green">📦</div><div class="cp-icon-name">Joomla</div></div>
+            <div class="cp-icon"><div class="ico ico-purple">🎨</div><div class="cp-icon-name">Drupal</div></div>
+            <div class="cp-icon"><div class="ico ico-teal">🛍️</div><div class="cp-icon-name">OpenCart</div></div>
+            <div class="cp-icon"><div class="ico ico-red">💬</div><div class="cp-icon-name">phpBB</div></div>
+            <div class="cp-icon"><div class="ico ico-gold">📊</div><div class="cp-icon-name">Magento</div></div>
+            <div class="cp-icon"><div class="ico ico-gray">🔧</div><div class="cp-icon-name">PrestaShop</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PHP ══ -->
+    <div class="page" id="page-php">
+      <div class="page-header"><div><h1>⚙️ PHP versiyasini tanlash</h1><p>Domeningiz uchun PHP versiyasini o'zgartiring</p></div></div>
+      <div style="background:#12101f;border:1px solid #2a2a4a;border-radius:8px;padding:18px">
+        <div class="cp-form">
+          <div class="cp-form-row">
+            <div class="form-group"><label class="form-label">Domen</label><select class="form-select"><option>example.uz</option><option>shop.example.uz</option></select></div>
+            <div class="form-group"><label class="form-label">PHP versiyasi</label>
+              <select class="form-select">
+                <option>PHP 8.2 (Tavsiya etiladi)</option>
+                <option>PHP 8.1</option>
+                <option>PHP 8.0</option>
+                <option>PHP 7.4</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-gold">Saqlash</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ GENERIC PAGES ══ -->
+    <div class="page" id="page-generic">
+      <div style="text-align:center;padding:80px 20px">
+        <div style="font-size:3rem;margin-bottom:16px" id="genericIcon">🚧</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1rem;color:#f5d97e;margin-bottom:8px" id="genericTitle"></div>
+        <div style="color:#6e6e8a;font-size:.85rem">Bu bo'lim tez orada qo'shiladi</div>
+        <button onclick="showPage('dashboard',null)" style="margin-top:20px;padding:9px 24px;background:linear-gradient(135deg,#f5d97e,#d4a017);color:#0a0800;border:none;border-radius:5px;font-family:'Raleway',sans-serif;font-weight:700;cursor:pointer">← Bosh sahifa</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /layout -->
+
+<script>
+const knownPages = ['dashboard','files','domains','email','database','ssl','backup','ftp','cron','logs','softaculous','php'];
+
+function showPage(name, navEl) {
+  // Hide all
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+  if (knownPages.includes(name)) {
+    document.getElementById('page-' + name).classList.add('active');
+  } else {
+    const icons = {webmail:'📬',spam:'🚫',redirect:'↪️',subdomains:'🔗',phpmyadmin:'🔧',firewall:'🛡️',hotlink:'🔗',errors:'⚠️',bandwidth:'📈'};
+    const titles = {webmail:'Webmail',spam:'Spam filtri',redirect:'Redirectlar',subdomains:'Subdomenlar',phpmyadmin:'phpMyAdmin',firewall:'IP Bloker',hotlink:'Hotlink himoya',errors:'Xato loglari',bandwidth:'Bandwidth hisoboti'};
+    document.getElementById('genericIcon').textContent = icons[name] || '🚧';
+    document.getElementById('genericTitle').textContent = titles[name] || name;
+    document.getElementById('page-generic').classList.add('active');
+  }
+
+  // Nav active
+  document.querySelectorAll('.top-nav a').forEach(a => a.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  document.querySelectorAll('.sidebar-link').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('onclick') && a.getAttribute('onclick').includes("'"+name+"'"));
+  });
+  window.scrollTo(0,0);
+}
+
+// Animate usage bars
+window.addEventListener('load',()=>{
+  document.querySelectorAll('.usage-fill').forEach(el=>{
+    const w=el.style.width; el.style.width='0';
+    setTimeout(()=>el.style.width=w,300);
+  });
+});
+</script>
+</body>
+</html>
